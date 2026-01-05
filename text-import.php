@@ -9,6 +9,44 @@
  * 7.結束檔案
  */
 
+$dsn="mysql:host=localhost;dbname=import;charset=utf8";
+$pdo=new PDO($dsn,'root','');
+
+
+if(!empty($_FILES['file']['tmp_name'])){
+    move_uploaded_file($_FILES['file']['tmp_name'],"upload/{$_FILES['file']['name']}");
+    $path="upload/{$_FILES['file']['name']}";
+
+$file=fopen($path,'r');
+$header=explode(",",trim(fgets($file)));
+$sql="INSERT INTO `peoples` (`".join("`,`",$header)."`)";
+
+//echo $header;
+//echo $sql;
+
+$rows=0;
+while(!feof($file)){
+$line=trim(fgets($file));
+//echo $line;
+if(strlen($line)>3){
+    $value=" VALUES('".join("','",explode(",",$line))."')";
+    
+    $pdo->exec($sql . $value);
+    $rows++;
+}
+}
+
+/* echo "<pre>";
+var_dump($file);
+echo "</pre>";
+ */
+
+echo "匯入完成，總計匯入 $rows 筆資料";
+fclose($file);
+}
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,7 +61,18 @@
 <h1 class="header">文字檔案匯入練習</h1>
 <!---建立檔案上傳機制--->
 
+<form action="?" method="post" enctype="multipart/form-data">
+<div>
+    <label for="">請選擇匯入檔(*.csv)</label>
+    <input type="file" name="file" id="">
+</div>
+<div>
+    <input type="submit" value="匯入">
+</div>
 
+
+
+</form>
 
 <!----讀出匯入完成的資料----->
 
